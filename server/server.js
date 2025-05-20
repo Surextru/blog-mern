@@ -10,7 +10,7 @@ import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import admin from "firebase-admin";
-import ServiceAccountKey from "./blog-website-p-firebase-adminsdk-9jf68-abee1c20f6.json" with {type: "json"};
+import ServiceAccountKey from "./blog-website-p-2949f3ce5c89.json" with {type: "json"};
 import {getAuth} from "firebase-admin/auth"
 import aws from "aws-sdk";
 
@@ -529,6 +529,28 @@ server.post("/add-comment", verifyJWT, (req, res) => {
 
     })
 
+})
+
+server.post("/get-blog-comments", (req, res) => {
+
+    let { blog_id, skip } = req.body;
+
+    let maxLimit = 5;
+
+    Comment.find({ blog_id, isReply: false })
+    .populate("commented_by", "personal_info.username personal_info.fullname personal_info.profile_img")
+    .skip(skip)
+    .limit(maxLimit)
+    .sort({
+        "commentAt": -1
+    })
+    .then( comment => {
+        return res.status(200).json({comment})
+    })
+    .catch(err => {
+        console.log(err.message)
+        return res.status(500).json({error: err.message})
+    })
 })
 
 // listen( port number, callback function)
